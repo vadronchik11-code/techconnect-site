@@ -1,0 +1,35 @@
+# Production-style stack for VPS. For local dev, use `npm run dev` instead.
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://techconnect:${DB_PASSWORD:-changeme}@db:5432/techconnect?schema=public"
+      AUTH_SECRET: "${AUTH_SECRET:-please-change-this-secret}"
+      NEXT_PUBLIC_SITE_URL: "${SITE_URL:-http://localhost:3000}"
+    volumes:
+      - uploads:/app/public/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: techconnect
+      POSTGRES_PASSWORD: "${DB_PASSWORD:-changeme}"
+      POSTGRES_DB: techconnect
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U techconnect"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  uploads:
+  pgdata:

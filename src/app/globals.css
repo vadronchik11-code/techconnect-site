@@ -1,0 +1,276 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --tc-flame: #ff511c;
+  --tc-crimson: #a81313;
+  --tc-cream: #ffebcf;
+  --tc-deep: #8c0f0f;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: var(--tc-flame);
+    color: #fff;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display font-extrabold tracking-tight;
+  }
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #ff511c, #a81313);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #fff3e6;
+  }
+}
+
+@layer components {
+  .container-tc {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+  }
+
+  /* Brand display type: heavy italic caps, like the ТЕХ|КОННЕКТ lockup */
+  .display {
+    @apply font-display font-black italic uppercase;
+    letter-spacing: -0.02em;
+  }
+
+  /* --- Buttons: skewed brand plates. Background/border live on ::before so
+         the label stays upright while the plate leans forward. --- */
+  .btn {
+    @apply relative isolate inline-flex cursor-pointer items-center justify-center gap-2 px-6 py-3 text-sm font-bold transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-flame focus-visible:ring-offset-2;
+  }
+  .btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 0.6rem;
+    transform: skewX(-8deg);
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary {
+    @apply btn text-white;
+  }
+  .btn-primary::before {
+    background: linear-gradient(120deg, #ff511c, #a81313);
+    box-shadow: 0 10px 26px -10px rgba(255, 81, 28, 0.65);
+  }
+  .btn-primary:hover::before {
+    filter: brightness(1.1);
+  }
+
+  .btn-cream {
+    @apply btn text-crimson;
+  }
+  .btn-cream::before {
+    background: var(--tc-cream);
+  }
+  .btn-cream:hover::before {
+    background: #fff;
+  }
+
+  .btn-outline {
+    @apply btn text-ink;
+  }
+  .btn-outline::before {
+    background: #fff;
+    border: 2px solid rgba(0, 0, 0, 0.14);
+  }
+  .btn-outline:hover {
+    @apply text-flame;
+  }
+  .btn-outline:hover::before {
+    border-color: var(--tc-flame);
+  }
+
+  .btn-outline-cream {
+    @apply btn text-cream;
+  }
+  .btn-outline-cream::before {
+    background: transparent;
+    border: 2px solid rgba(255, 235, 207, 0.65);
+  }
+  .btn-outline-cream:hover::before {
+    background: rgba(255, 235, 207, 0.14);
+    border-color: var(--tc-cream);
+  }
+
+  .btn-ghost {
+    @apply btn text-ink/70;
+  }
+  .btn-ghost::before {
+    background: transparent;
+  }
+  .btn-ghost:hover {
+    @apply text-crimson;
+  }
+  .btn-ghost:hover::before {
+    background: var(--tc-cream);
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-bold;
+  }
+
+  .card {
+    @apply rounded-xl border-2 border-ink/[0.07] bg-white;
+  }
+
+  .section {
+    @apply py-16 sm:py-24;
+  }
+
+  .tc-input {
+    @apply w-full rounded-lg border-2 border-ink/[0.1] bg-white px-4 py-3 text-ink outline-none transition-colors placeholder:text-ink/[0.35] focus:border-flame focus:ring-2 focus:ring-flame/20;
+  }
+
+  .tc-label {
+    @apply mb-1.5 block text-sm font-semibold text-ink;
+  }
+
+  /* --- Brand plates (skewed labels from the identity) --- */
+  .tc-plate {
+    position: relative;
+    isolation: isolate;
+    display: inline-block;
+    padding: 0.12em 0.5em 0.16em;
+  }
+  .tc-plate::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 0.35em;
+    transform: skewX(-8deg);
+  }
+  .tc-plate-cream { color: var(--tc-crimson); }
+  .tc-plate-cream::before { background: var(--tc-cream); }
+  .tc-plate-flame { color: #fff7ed; }
+  .tc-plate-flame::before { background: linear-gradient(120deg, #ff511c, #a81313); }
+  .tc-plate-white { color: var(--tc-crimson); }
+  .tc-plate-white::before { background: #fff; }
+  .tc-plate-deep { color: var(--tc-cream); }
+  .tc-plate-deep::before { background: var(--tc-deep); }
+
+  .tc-plate-slash {
+    position: absolute;
+    top: -0.5em;
+    right: -0.85em;
+    width: 1.5em;
+    height: auto;
+  }
+  .tc-plate-cream .tc-plate-slash { color: var(--tc-cream); }
+  .tc-plate-flame .tc-plate-slash { color: var(--tc-flame); }
+  .tc-plate-white .tc-plate-slash { color: #fff; }
+  .tc-plate-deep .tc-plate-slash { color: var(--tc-deep); }
+}
+
+/* --------- Comet streak drift --------- */
+.tc-drift {
+  animation: tc-drift 18s ease-in-out infinite alternate;
+}
+@keyframes tc-drift {
+  from { transform: translate(-22px, 22px); }
+  to { transform: translate(22px, -22px); }
+}
+
+/* --------- Horizontal roadmap scroller --------- */
+.tc-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #ff511c #fff3e6;
+  scroll-behavior: smooth;
+}
+.tc-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.tc-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #ff511c, #a81313);
+  border-radius: 999px;
+}
+.tc-scroll::-webkit-scrollbar-track {
+  background: #fff3e6;
+  border-radius: 999px;
+}
+
+/* --------- Marquee --------- */
+.marquee-track {
+  animation: marquee var(--speed, 32s) linear infinite;
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* --------- Prose (markdown news) --------- */
+.prose-tc {
+  @apply text-ink/80 leading-relaxed;
+}
+.prose-tc h2 {
+  @apply mt-10 mb-4 text-2xl font-extrabold text-ink;
+}
+.prose-tc h3 {
+  @apply mt-8 mb-3 text-xl font-bold text-ink;
+}
+.prose-tc p {
+  @apply my-4;
+}
+.prose-tc a {
+  @apply font-semibold text-flame underline decoration-flame/30 underline-offset-2 hover:decoration-flame;
+}
+.prose-tc ul {
+  @apply my-4 list-disc space-y-2 pl-6 marker:text-flame;
+}
+.prose-tc ol {
+  @apply my-4 list-decimal space-y-2 pl-6 marker:font-bold marker:text-crimson;
+}
+.prose-tc blockquote {
+  @apply my-6 rounded-xl bg-cream/60 px-5 py-4 font-medium italic text-crimson;
+}
+.prose-tc code {
+  @apply rounded-md bg-cream px-1.5 py-0.5 font-mono text-sm text-crimson;
+}
+.prose-tc pre {
+  @apply my-6 overflow-x-auto rounded-xl bg-ink p-5 text-sm text-cream;
+}
+.prose-tc pre code {
+  @apply bg-transparent p-0 text-cream;
+}
+.prose-tc img {
+  @apply my-6 h-auto max-w-full rounded-xl;
+}
+.prose-tc strong {
+  @apply font-bold text-ink;
+}
+.prose-tc hr {
+  @apply my-8 border-ink/10;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
