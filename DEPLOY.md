@@ -293,6 +293,13 @@ cd /opt/techconnect && git pull && docker compose up -d --build
 Схема базы применится сама службой `migrate`. **Команду `seed` больше не
 запускай** — она перезаписывает демо-данные.
 
+Если правил `prisma/seed.ts` и нужно прогнать его заново, сначала пересобери
+образ, иначе запустится старая версия:
+
+```bash
+docker compose build seed && docker compose run --rm seed
+```
+
 ---
 
 ## Бэкапы

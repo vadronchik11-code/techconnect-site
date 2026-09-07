@@ -31,7 +31,12 @@ services:
 
   # Creates/updates the database schema, then exits. Runs as the same uid as
   # the app so the file it creates stays writable by it.
+  #
+  # `migrate` and `seed` deliberately share ONE image name. Without it they get
+  # separate images, and since `seed` sits in a manual profile, `up --build`
+  # would refresh only `migrate` and leave the seed image silently stale.
   migrate:
+    image: techconnect-tools
     build:
       context: .
       target: migrator
@@ -45,6 +50,7 @@ services:
   # Fills an empty database with the admin account and demo content.
   # Run manually, once: docker compose run --rm seed
   seed:
+    image: techconnect-tools
     build:
       context: .
       target: migrator
