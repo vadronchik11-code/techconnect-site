@@ -22,6 +22,11 @@ services:
       DATABASE_URL: "file:/app/data/prod.db"
       AUTH_SECRET: "${AUTH_SECRET:?set AUTH_SECRET in .env}"
       NEXT_PUBLIC_SITE_URL: "${SITE_URL:-http://localhost:3000}"
+      # Also passed as a build arg above. Set in BOTH places on purpose: depending
+      # on the Next.js version the middleware bundle either inlines this at build
+      # time or reads it at runtime, and if it is missing the host split silently
+      # switches off — the admin panel then stays reachable on the public domain.
+      ADMIN_HOST: "${ADMIN_HOST:-}"
     volumes:
       - dbdata:/app/data
       - uploads:/app/public/uploads
