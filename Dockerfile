@@ -35,6 +35,11 @@ RUN apk add --no-cache openssl
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
+# prisma/seed.ts imports the page templates from src/lib/gazetteTemplates so the
+# seeded pages and the admin's "new page" layouts stay one source of truth —
+# which means this stage needs the source tree, not just prisma/.
+COPY --from=builder /app/src ./src
 # Same uid the app runs as, so the SQLite file this stage creates on the shared
 # volume stays writable by the web container.
 RUN mkdir -p /app/data && chown -R 1001:1001 /app/data
