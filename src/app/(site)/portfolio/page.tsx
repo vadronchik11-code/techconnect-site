@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import PageHeader from '@/components/PageHeader';
 import CometStreaks from '@/components/CometStreaks';
 import AnimatedLogo from '@/components/AnimatedLogo';
+import Markdown from '@/components/Markdown';
 import { formatDate } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
@@ -44,7 +45,7 @@ export default async function PortfolioPage() {
                   <div className="p-7">
                     {item.date && <p className="text-sm font-bold text-crimson">{formatDate(item.date)}</p>}
                     <h3 className="mt-1 text-2xl font-extrabold text-ink">{item.title}</h3>
-                    <p className="mt-3 text-ink/65">{item.description}</p>
+                    {item.description && <Markdown content={item.description} compact className="mt-3 text-ink/65" />}
                     <div className="mt-6 flex flex-wrap gap-x-4 gap-y-3 border-t-2 border-ink/[0.06] pt-5">
                       {item.participants != null && (
                         <div className="tc-plate tc-plate-cream px-3 py-1">

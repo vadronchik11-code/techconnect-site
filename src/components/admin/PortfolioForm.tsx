@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import ImageUpload from './ImageUpload';
+import MarkdownEditor from './MarkdownEditor';
 import SubmitButton from './SubmitButton';
 
 interface PortfolioValues {
@@ -29,10 +30,7 @@ export default function PortfolioForm({
           <span className="tc-label">Название *</span>
           <input name="title" required defaultValue={values.title} className="tc-input" placeholder="Название кейса" />
         </label>
-        <label className="block">
-          <span className="tc-label">Описание</span>
-          <textarea name="description" rows={4} defaultValue={values.description} className="tc-input resize-none" placeholder="Что провели и как прошло" />
-        </label>
+        <MarkdownEditor name="description" defaultValue={values.description} label="Описание" />
         <div className="grid gap-5 sm:grid-cols-3">
           <label className="block">
             <span className="tc-label">Участников</span>

@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { MapPin } from 'lucide-react';
 import { EVENT_TYPES, EVENT_STATUS, type EventType, type EventStatus } from '@/lib/constants';
 import { EventTypeIcon } from './icons';
+import Markdown from './Markdown';
 import { formatDate, cn } from '@/lib/utils';
 
 export interface RoadmapEvent {
@@ -31,6 +32,10 @@ const AMP = 52;
 const NODE_R = 30;
 const OFFSET = 56;
 const CARD_W = 300;
+// Reserved for the horizontal scrollbar + a hair of breathing room; used
+// consistently in both the "how much space is available" measurement and
+// the scroller's own allocated height, so they can never disagree.
+const SCROLLER_MARGIN = 14;
 
 function typeMeta(type: string) {
   return EVENT_TYPES[type as EventType] ?? EVENT_TYPES.OTHER;
@@ -77,7 +82,9 @@ function EventCard({ event, compact = false }: { event: RoadmapEvent; compact?: 
           {event.title}
         </Link>
       </h3>
-      <p className="mt-1.5 line-clamp-3 text-sm text-ink/60">{event.description}</p>
+      {event.description && (
+        <Markdown content={event.description} compact className="mt-1.5 line-clamp-3 text-sm text-ink/60" />
+      )}
       {event.location && (
         <p className="mt-2 flex items-center gap-1 text-sm text-ink/50">
           <MapPin className="h-3.5 w-3.5" /> {event.location}
@@ -105,6 +112,61 @@ function EventCard({ event, compact = false }: { event: RoadmapEvent; compact?: 
 export default function EventRoadmap({ events }: { events: RoadmapEvent[] }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [viewScale, setViewScale] = useState(1);
+  const [canvasHeight, setCanvasHeight] = useState(H);
+  const [canvasOffsetY, setCanvasOffsetY] = useState(0);
+
+  // Shrink the whole roadmap canvas to fit whatever vertical space remains
+  // below it in the viewport, so the page never needs a vertical scroll to
+  // see the full road — only the horizontal scroller inside is used to pan
+  // it. Event cards are organic-height content (a registration button, a
+  // longer description), so they can run taller than the nominal H budget —
+  // "up" cards (anchored by their bottom edge) can even poke above y=0.
+  // scrollHeight only reliably reports overflow past the bottom, so the true
+  // extent (and how far above 0 content reaches) is measured directly from
+  // each card's real position + height instead.
+  useEffect(() => {
+    const scrollEl = scrollAreaRef.current;
+    const canvasEl = canvasRef.current;
+    if (!scrollEl || !canvasEl) return;
+
+    function recompute() {
+      const cards = Array.from(canvasEl!.querySelectorAll<HTMLElement>('article'));
+      let minTop = 0;
+      let maxBottom = H;
+      cards.forEach((card, i) => {
+        const cardH = card.offsetHeight;
+        const nodeY = BASE_Y + (i % 2 === 0 ? -AMP : AMP);
+        const up = i % 2 === 0;
+        const top = up ? nodeY - OFFSET - cardH : nodeY + OFFSET;
+        minTop = Math.min(minTop, top);
+        maxBottom = Math.max(maxBottom, top + cardH);
+      });
+      const naturalHeight = maxBottom - minTop;
+
+      const top = scrollEl!.getBoundingClientRect().top;
+      const available = window.innerHeight - top - SCROLLER_MARGIN;
+      setCanvasHeight(naturalHeight);
+      setCanvasOffsetY(-minTop);
+      setViewScale(Math.min(1, Math.max(0.15, available / naturalHeight)));
+    }
+
+    recompute();
+    window.addEventListener('resize', recompute);
+    // Web fonts swapping in after first paint (or images loading) can change
+    // event cards' organic height — re-measure whenever that happens rather
+    // than guessing with a timeout.
+    const ro = new ResizeObserver(() => recompute());
+    canvasEl.querySelectorAll('article').forEach((card) => ro.observe(card));
+    document.fonts?.ready?.then(recompute).catch(() => {});
+
+    return () => {
+      window.removeEventListener('resize', recompute);
+      ro.disconnect();
+    };
+  }, [events]);
 
   const n = events.length;
   const width = PAD * 2 + n * STEP;
@@ -118,6 +180,8 @@ export default function EventRoadmap({ events }: { events: RoadmapEvent[] }) {
   // as final; if none is marked, the line runs off the right edge — the journey
   // continues, its end just isn't known yet.
   const hasFinal = events.some((e) => e.isFinal);
+  // the traveller's "current position" — first event that hasn't passed yet
+  const nextIdx = events.findIndex((e) => e.status !== 'PAST');
   const pts = [...nodes];
   if (!hasFinal && pts.length > 0) pts.push({ x: width + 12, y: BASE_Y });
 
@@ -166,13 +230,19 @@ export default function EventRoadmap({ events }: { events: RoadmapEvent[] }) {
 
   return (
     <div ref={wrapRef} className="w-full">
-      {/* Full-width horizontal winding road (scrolls on any screen) */}
-      <div>
-        <p className="container-tc mb-3 flex items-center justify-end gap-2 text-sm text-ink/40">
-          <span aria-hidden>←</span> листайте, чтобы пройти весь путь <span aria-hidden>→</span>
-        </p>
-        <div className="tc-scroll overflow-x-auto px-5 pb-5 sm:px-8">
-          <div className="relative" style={{ width, height: H }}>
+      {/* Fixed-height horizontal-only scroller: the canvas below is scaled to
+          fit, so there is never a vertical scrollbar here. */}
+      <div
+        ref={scrollAreaRef}
+        className="tc-scroll overflow-x-auto overflow-y-hidden px-5 sm:px-8"
+        style={{ height: canvasHeight * viewScale + SCROLLER_MARGIN }}
+      >
+        <div className="relative" style={{ width: width * viewScale, height: canvasHeight * viewScale }}>
+          <div
+            ref={canvasRef}
+            className="absolute left-0 top-0 origin-top-left"
+            style={{ width, height: H, transform: `scale(${viewScale}) translateY(${canvasOffsetY}px)` }}
+          >
             <svg width={width} height={H} viewBox={`0 0 ${width} ${H}`} className="absolute inset-0" aria-hidden>
               <defs>
                 <linearGradient id="tc-road-h" x1="0" y1="0" x2="1" y2="0">
@@ -235,6 +305,7 @@ export default function EventRoadmap({ events }: { events: RoadmapEvent[] }) {
                       animationDelay: `${i * 0.08}s`,
                     }}
                   >
+                    {i === nextIdx && !event.isFinal && <span aria-hidden className="tc-pulse-ring" />}
                     <span className="display text-xl">{i + 1}</span>
                   </div>
                   {/* card */}

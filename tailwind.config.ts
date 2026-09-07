@@ -32,10 +32,16 @@ const config: Config = {
         amber: {
           DEFAULT: '#FFA009', // comet head / gold
         },
+        // the desk the gazette sheet sits on, and the warm gray of its offset
+        // "shadow plate" (a solid duplicate shape, not a blur)
+        paperbg: '#EDE6DB',
+        plateshadow: '#C9C6C0',
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
         display: ['var(--font-montserrat)', 'var(--font-inter)', 'sans-serif'],
+        // the printed gazette is a heavy geometric sans in italic, not a serif
+        gazette: ['var(--font-montserrat)', 'var(--font-inter)', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         card: '0 10px 40px -12px rgba(168, 19, 19, 0.18)',

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import ImageUpload from './ImageUpload';
+import MarkdownEditor from './MarkdownEditor';
 import SubmitButton from './SubmitButton';
 
 interface PartnerValues {
@@ -27,14 +28,8 @@ export default function PartnerForm({
           <span className="tc-label">Название *</span>
           <input name="name" required defaultValue={values.name} className="tc-input" placeholder="Название компании" />
         </label>
-        <label className="block">
-          <span className="tc-label">Описание</span>
-          <textarea name="description" rows={3} defaultValue={values.description} className="tc-input resize-none" placeholder="Чем занимается партнёр" />
-        </label>
-        <label className="block">
-          <span className="tc-label">Чем помогает объединению</span>
-          <textarea name="help" rows={2} defaultValue={values.help} className="tc-input resize-none" placeholder="Менторы, стажировки, площадки…" />
-        </label>
+        <MarkdownEditor name="description" defaultValue={values.description} label="Описание" />
+        <MarkdownEditor name="help" defaultValue={values.help} label="Чем помогает объединению" />
         <label className="block">
           <span className="tc-label">Ссылка на сайт</span>
           <input name="url" defaultValue={values.url ?? ''} className="tc-input" placeholder="https://…" />

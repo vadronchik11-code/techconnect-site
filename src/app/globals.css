@@ -184,6 +184,47 @@
   .tc-plate-deep .tc-plate-slash { color: var(--tc-deep); }
 }
 
+/* --------- "Next stop" pulse on the events road --------- */
+.tc-pulse-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 3px solid var(--tc-flame);
+  pointer-events: none;
+  animation: tc-pulse 2.2s ease-out infinite;
+}
+@keyframes tc-pulse {
+  0% { transform: scale(1); opacity: 0.75; }
+  70%, 100% { transform: scale(1.55); opacity: 0; }
+}
+
+/* --------- Hero: animated logo sizing ---------
+   One source of truth for the corner logo. The streak-mask in Hero.tsx is
+   derived from these same two variables, so the hole always tracks the logo. */
+/* Sized halfway between the original logo and the doubled one, at every
+   breakpoint: e.g. on a 1440px screen 518px (original) and 780px (doubled)
+   land on 649px here. */
+.tc-hero {
+  --hero-logo: min(60vw, 228px);
+  --hero-logo-top: 0px;
+}
+@media (min-width: 640px) {
+  .tc-hero {
+    --hero-logo: min(42vw, 304px);
+  }
+}
+@media (min-width: 1024px) {
+  .tc-hero {
+    /* Grows with the viewport but stops before it can reach the copy. Kept
+       comfortably under the 1080px master so the video is always scaled DOWN,
+       which is what keeps the edges crisp. */
+    --hero-logo: min(62vw - 300px, 730px);
+    /* Lift it so the comet head clears the angled bottom edge of the section;
+       the tail is meant to run off the top-right corner. */
+    --hero-logo-top: calc(var(--hero-logo) * -0.21);
+  }
+}
+
 /* --------- Comet streak drift --------- */
 .tc-drift {
   animation: tc-drift 18s ease-in-out infinite alternate;
@@ -262,6 +303,610 @@
 }
 .prose-tc hr {
   @apply my-8 border-ink/10;
+}
+
+/* --------- Gazette admin builder: selection ring --------- */
+.tc-block-selected {
+  outline: 3px solid var(--tc-flame);
+  outline-offset: 2px;
+}
+
+/* --------- Gazette block prose: compact spacing + optional dark-tone inversion --------- */
+.tc-prose-compact h2 {
+  @apply mb-1.5 mt-2 text-base font-extrabold;
+}
+.tc-prose-compact h3 {
+  @apply mb-1 mt-2 text-sm font-bold;
+}
+.tc-prose-compact p {
+  @apply my-1.5;
+}
+.tc-prose-compact ul,
+.tc-prose-compact ol {
+  @apply my-1.5 space-y-0.5;
+}
+.tc-prose-compact blockquote {
+  @apply my-2 px-3 py-2;
+}
+.tc-prose-compact img {
+  @apply my-2 rounded-md;
+}
+.tc-prose-compact hr {
+  @apply my-3;
+}
+.tc-prose-compact-dark {
+  @apply text-cream/85;
+}
+.tc-prose-compact-dark h2,
+.tc-prose-compact-dark h3,
+.tc-prose-compact-dark strong {
+  @apply text-cream;
+}
+.tc-prose-compact-dark a {
+  @apply text-flame decoration-flame/50 hover:decoration-flame;
+}
+.tc-prose-compact-dark blockquote {
+  @apply bg-white/10 text-cream;
+}
+.tc-prose-compact-dark code {
+  @apply bg-white/10 text-cream;
+}
+.tc-prose-compact-dark ul {
+  @apply marker:text-flame;
+}
+.tc-prose-compact-dark ol {
+  @apply marker:text-flame;
+}
+.tc-prose-compact-dark hr {
+  @apply border-cream/20;
+}
+
+/* --------- Rich text (news) editor — brand the MDXEditor theme tokens ---------
+   Two class selectors (.tc-mdx .mdxeditor) so this reliably outranks the
+   library's own single-class default-theme rule regardless of CSS order. */
+.tc-mdx .mdxeditor {
+  --accentBase: #fff3e6;
+  --accentBgSubtle: var(--tc-cream);
+  --accentBg: #ffdcae;
+  --accentBgHover: #ffd08f;
+  --accentBgActive: #ffc373;
+  --accentLine: #f3b877;
+  --accentBorder: #eda558;
+  --accentBorderHover: var(--tc-flame);
+  --accentSolid: var(--tc-flame);
+  --accentSolidHover: var(--tc-crimson);
+  --accentText: var(--tc-crimson);
+  --accentTextContrast: #fff;
+
+  --basePageBg: #fff;
+  --baseBase: #fff;
+  --baseBgSubtle: #fffaf3;
+  --baseBg: #fff;
+  --baseBgHover: var(--tc-cream);
+  --baseBgActive: #ffdcae;
+  --baseLine: rgba(0, 0, 0, 0.08);
+  --baseBorder: rgba(0, 0, 0, 0.1);
+  --baseBorderHover: rgba(0, 0, 0, 0.18);
+  --baseSolid: #1a1a1a;
+  --baseSolidHover: #000;
+  --baseText: #1a1a1a;
+  --baseTextContrast: #000;
+
+  --font-body: var(--font-inter), system-ui, sans-serif;
+  --radius-medium: 0.5rem;
+  --radius-large: 0.65rem;
+}
+.tc-mdx-toolbar {
+  @apply flex flex-wrap items-center gap-0.5 border-b border-ink/10 bg-cream/40 px-2 py-1.5;
+}
+.tc-mdx-toolbar button {
+  border-radius: 0.4rem;
+}
+.tc-mdx-content {
+  @apply min-h-[16rem] px-5 py-4 text-ink/85;
+}
+.tc-mdx-content h2 {
+  @apply mb-3 mt-2 font-display text-2xl font-extrabold text-ink;
+}
+.tc-mdx-content h3 {
+  @apply mb-2 mt-2 font-display text-xl font-bold text-ink;
+}
+.tc-mdx-content p {
+  @apply my-3 leading-relaxed;
+}
+.tc-mdx-content a {
+  @apply font-semibold text-flame underline decoration-flame/30 underline-offset-2;
+}
+.tc-mdx-content blockquote {
+  @apply my-4 rounded-xl bg-cream/60 px-5 py-3 font-medium italic text-crimson;
+}
+.tc-mdx-content ul {
+  @apply my-3 list-disc space-y-1 pl-6 marker:text-flame;
+}
+.tc-mdx-content ol {
+  @apply my-3 list-decimal space-y-1 pl-6 marker:font-bold marker:text-crimson;
+}
+.tc-mdx-content img {
+  @apply my-4 h-auto max-w-full rounded-xl;
+}
+.tc-mdx-content hr {
+  @apply my-6 border-ink/10;
+}
+
+/* ===========================================================================
+   GAZETTE (/news) — the printed-newsletter design system.
+
+   Everything below lives inside a `transform: scale()` subtree, so 1 design px
+   === 1 CSS px and every size here is a literal px matching the print design.
+   Kept separate from .tc-prose-compact on purpose: that class is shared by the
+   events roadmap, contacts, portfolio and partners pages, which must stay
+   left-aligned and must not inherit the gazette's justification.
+   =========================================================================== */
+:root {
+  --tc-gz-shadowplate: #c9c6c0;
+}
+
+/* --- paper + plates --- */
+.tc-gz-paper {
+  background: #fff;
+  border: 0;
+  border-radius: 3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07), 0 2px 6px rgba(0, 0, 0, 0.05),
+    0 28px 64px -24px rgba(0, 0, 0, 0.38);
+}
+/* the signature solid offset shadow — 0 blur, a duplicate shape, not a glow */
+.tc-gz-plate {
+  border-radius: 14px;
+  box-shadow: 7px 7px 0 0 var(--tc-gz-shadowplate);
+}
+.tc-gz-panel {
+  border-radius: 22px;
+  box-shadow: 11px 11px 0 0 var(--tc-gz-shadowplate);
+}
+.tc-gz-plate--ink {
+  background: #000;
+  color: #fff;
+}
+.tc-gz-plate--flame {
+  background: #ff511c;
+  color: #fff;
+}
+.tc-gz-pad {
+  padding: 22px 26px;
+}
+.tc-gz-rule {
+  width: 100%;
+  height: 2px;
+  background: #000;
+}
+.tc-gz-rule--thick {
+  width: 100%;
+  height: 5px;
+  background: #000;
+}
+.tc-gz--dark .tc-gz-rule {
+  background: #ffebcf;
+}
+
+/* --- display type --- */
+.tc-gz-headline {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  font-size: 62px;
+  line-height: 0.94;
+  letter-spacing: -0.035em;
+  color: #000;
+  text-wrap: balance;
+  hyphens: none;
+}
+.tc-gz--dark .tc-gz-headline {
+  color: #ffebcf;
+}
+.tc-gz-subtitle {
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 700;
+  font-style: italic;
+  font-size: 17px;
+  line-height: 1.4;
+  color: #111;
+  text-align: justify;
+  hyphens: auto;
+  margin-top: 14px;
+}
+.tc-gz-subtitle > p {
+  margin: 0 0 8px;
+}
+.tc-gz-subtitle > p:last-child {
+  margin-bottom: 0;
+}
+.tc-gz--dark .tc-gz-subtitle {
+  color: rgba(255, 235, 207, 0.85);
+}
+/* the cover headline is the one place the reference breaks its own italic rule */
+.tc-gz-coverhead {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 900;
+  font-style: normal;
+  text-transform: uppercase;
+  color: #fff;
+  font-size: 54px;
+  line-height: 0.96;
+  letter-spacing: -0.03em;
+}
+.tc-gz-quote {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 38px;
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+  color: #000;
+  text-wrap: balance;
+}
+.tc-gz-quote::before {
+  content: '«';
+  color: #ff511c;
+  margin-right: 0.06em;
+}
+.tc-gz-quote::after {
+  content: '»';
+  color: #ff511c;
+  margin-left: 0.06em;
+}
+.tc-gz--dark .tc-gz-quote {
+  color: #ffebcf;
+}
+
+/* --- story header: rule ABOVE, then chip + heavy italic title + gray category --- */
+.tc-gz-storyhead {
+  margin-bottom: 12px;
+}
+.tc-gz-storyhead-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 13px;
+  margin-top: 11px;
+}
+.tc-gz-chip {
+  align-self: center;
+  display: inline-grid;
+  place-items: center;
+  min-width: 46px;
+  height: 32px;
+  padding-inline: 11px;
+  border-radius: 9px;
+  background: #000;
+  color: #fff;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+}
+.tc-gz-storytitle {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  font-size: 30px;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: #000;
+  text-wrap: balance;
+}
+.tc-gz-cat {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 600;
+  font-style: normal;
+  text-transform: uppercase;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: #8a8a8a;
+}
+.tc-gz--dark .tc-gz-chip {
+  background: #ffebcf;
+  color: #000;
+}
+.tc-gz--dark .tc-gz-storytitle {
+  color: #ffebcf;
+}
+.tc-gz--dark .tc-gz-cat {
+  color: rgba(255, 235, 207, 0.55);
+}
+
+/* --- body copy: justified + first-line indent + Russian hyphenation ---
+   hyphens:auto is not optional here — justified Russian in a narrow column
+   develops visible rivers of whitespace without it. Relies on <html lang="ru">. */
+.tc-gz-body {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.46;
+  color: #111;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphenate-limit-chars: 6 3 3;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}
+.tc-gz-body > p {
+  margin: 0 0 9px;
+}
+.tc-gz-body > p:first-of-type {
+  text-indent: 34px;
+}
+.tc-gz-body > p:last-child {
+  margin-bottom: 0;
+}
+.tc-gz-body strong {
+  font-weight: 700;
+  color: #000;
+}
+.tc-gz-body em {
+  font-style: italic;
+}
+.tc-gz-body a {
+  color: #a81313;
+  text-decoration-thickness: from-font;
+}
+.tc-gz-body ul,
+.tc-gz-body ol {
+  text-align: left;
+  margin: 8px 0;
+  padding-left: 22px;
+}
+.tc-gz-body ul {
+  list-style: disc;
+}
+.tc-gz-body ol {
+  list-style: decimal;
+}
+.tc-gz-body blockquote {
+  margin: 10px 0;
+  padding-left: 14px;
+  border-left: 3px solid #ff511c;
+  font-style: italic;
+  text-align: left;
+}
+.tc-gz--dark .tc-gz-body {
+  color: #ffebcf;
+}
+.tc-gz--dark .tc-gz-body strong {
+  color: #fff;
+}
+.tc-gz--dark .tc-gz-body a {
+  color: #fff;
+}
+
+/* --- day banner: one flat orange, no radius, no border --- */
+.tc-gz-daybar {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: #ff511c;
+  border-radius: 0;
+  border: 0;
+  padding-inline: 18px;
+}
+.tc-gz-daybar-track {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  white-space: nowrap;
+}
+.tc-gz-daybar-item {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  font-size: 26px;
+  letter-spacing: 0.01em;
+  color: #fff;
+}
+.tc-gz-daybar-item--dim {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* --- justified photo rows: common height, width proportional to aspect --- */
+.tc-gz-photorows {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 8px;
+  /* rows are sized to their own photos, so centre whatever slack remains */
+  justify-content: center;
+}
+.tc-gz-photorow {
+  display: flex;
+  /* height comes from the row's own aspect sum — see GazetteBlockContent */
+  flex: 0 0 auto;
+  min-height: 0;
+  gap: 8px;
+}
+.tc-gz-photo {
+  position: relative;
+  min-width: 0; /* required, or the img's min-content width fights flex-grow */
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.28);
+  background: #fff;
+  margin: 0;
+}
+.tc-gz-photo > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --- printed chrome: masthead, folio, brand mark --- */
+.tc-gz-masthead {
+  position: absolute;
+  top: 34px;
+  left: 60px;
+  right: 60px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  z-index: 999998;
+  pointer-events: none;
+}
+.tc-gz-masthead--inline {
+  position: static;
+  margin-bottom: 24px;
+}
+.tc-gz-issue {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 700;
+  font-style: italic;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: #000;
+}
+.tc-gz-wordmark {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 46px;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  text-transform: lowercase;
+  color: #000;
+  margin-top: 3px;
+}
+.tc-gz-newsplate {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 9px 16px 11px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  font-size: 20px;
+  letter-spacing: 0.01em;
+  color: #fff;
+}
+.tc-gz-newsplate-thin {
+  font-weight: 500;
+}
+.tc-gz-pagefoot {
+  position: absolute;
+  left: 60px;
+  right: 60px;
+  bottom: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 999998;
+}
+.tc-gz-pagefoot--inline {
+  position: static;
+  margin-top: 28px;
+}
+.tc-gz-folio {
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 800;
+  font-style: italic;
+  font-size: 17px;
+  letter-spacing: 0.02em;
+  color: #000;
+}
+.tc-gz-mark {
+  width: 34px;
+  height: auto;
+  color: #000;
+}
+
+/* --- accent rows (the reference's «ГОРОСКОПЫ» pattern, on-brand flame/crimson) --- */
+.tc-gz-accbar {
+  background: #ff511c;
+  color: #fff;
+  border-radius: 12px;
+  padding: 9px 20px;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 800;
+  font-style: italic;
+  text-transform: uppercase;
+  font-size: 17px;
+  letter-spacing: 0.04em;
+}
+.tc-gz-accbar--head {
+  background: #a81313;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 900;
+}
+.tc-gz-accbody {
+  font-family: var(--font-inter), sans-serif;
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.42;
+  color: #111;
+  padding: 10px 20px 16px;
+  text-align: justify;
+  hyphens: auto;
+}
+
+/* --- page turn: decorative only ---
+   No animation-fill-mode on purpose. If the animation never runs (reduced
+   motion, a backgrounded tab, a browser that is not compositing), the element
+   simply rests at its natural, fully visible state — a page turn must never
+   depend on an animation to become readable. */
+@keyframes tc-gz-turn-in-fwd {
+  from {
+    opacity: 0;
+    transform: translateX(26px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes tc-gz-turn-in-back {
+  from {
+    opacity: 0;
+    transform: translateX(-26px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.tc-gz-turn-fwd {
+  animation: tc-gz-turn-in-fwd 0.26s cubic-bezier(0, 0, 0.2, 1);
+}
+.tc-gz-turn-back {
+  animation: tc-gz-turn-in-back 0.26s cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* --- mobile reflow: same components, gentler display sizes --- */
+.tc-gz-flow .tc-gz-headline {
+  font-size: 40px;
+}
+.tc-gz-flow .tc-gz-storytitle {
+  font-size: 26px;
+}
+.tc-gz-flow .tc-gz-wordmark {
+  font-size: 34px;
+}
+.tc-gz-flow .tc-gz-coverhead {
+  font-size: 36px;
+}
+.tc-gz-flow .tc-gz-quote {
+  font-size: 28px;
+}
+.tc-gz-flow .tc-gz-daybar-item {
+  font-size: 20px;
 }
 
 @media (prefers-reduced-motion: reduce) {

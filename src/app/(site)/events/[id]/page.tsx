@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { MapPin, CalendarDays } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import CometStreaks from '@/components/CometStreaks';
+import Markdown from '@/components/Markdown';
 import { EventTypeIcon } from '@/components/icons';
 import { EVENT_TYPES, EVENT_STATUS, type EventType, type EventStatus } from '@/lib/constants';
 import { formatDateTime } from '@/lib/utils';
@@ -90,7 +91,7 @@ export default async function EventPage({ params }: Props) {
           )}
 
           {event.description ? (
-            <p className="whitespace-pre-line text-lg leading-relaxed text-ink/75">{event.description}</p>
+            <Markdown content={event.description} className="text-lg" />
           ) : (
             <p className="text-lg text-ink/50">Подробности скоро появятся.</p>
           )}

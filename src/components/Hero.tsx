@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import AnimatedLogo from './AnimatedLogo';
+import HeroLogoVideo from './HeroLogoVideo';
 import CometStreaks from './CometStreaks';
+import CountUp from './CountUp';
 import FollowNews from './FollowNews';
 import Plate from './Plate';
 import { SITE } from '@/lib/constants';
@@ -8,6 +9,14 @@ import { SITE } from '@/lib/constants';
 interface HeroProps {
   stats: { events: string; participants: string; partners: string };
 }
+
+/**
+ * Soft hole punched in the drifting streak layer so the streaks stop crossing
+ * the logo. Both the size and the position are derived from the same variables
+ * that place the video, so the hole tracks the logo at every breakpoint.
+ */
+const HOLE =
+  'radial-gradient(ellipse calc(var(--hero-logo) * 0.60) calc(var(--hero-logo) * 0.62) at calc(100% - var(--hero-logo) / 2) calc(var(--hero-logo-top) + var(--hero-logo) * 0.52), transparent 38%, black 100%)';
 
 export default function Hero({ stats }: HeroProps) {
   const statItems = [
@@ -17,10 +26,31 @@ export default function Hero({ stats }: HeroProps) {
   ];
 
   return (
-    <section className="relative overflow-hidden bg-[linear-gradient(155deg,#FF511C_0%,#C42315_42%,#A81313_72%,#8C0F0F_100%)] text-white [clip-path:polygon(0_0,100%_0,100%_calc(100%-3.5rem),0_100%)]">
-      <CometStreaks tone="flame" density={30} seed={5} className="opacity-80" />
+    <section className="tc-hero relative overflow-hidden bg-[linear-gradient(155deg,#FF511C_0%,#C42315_42%,#A81313_72%,#8C0F0F_100%)] text-white [clip-path:polygon(0_0,100%_0,100%_calc(100%-3.5rem),0_100%)]">
+      {/* The drifting streaks are masked out behind the logo so they stop
+          crossing it. The hole is driven by the same --hero-logo variable that
+          sizes the video, so the two can never drift apart, and it fades out
+          gradually — a hard edge would read as a bug. */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          maskImage: HOLE,
+          WebkitMaskImage: HOLE,
+        }}
+      >
+        <CometStreaks tone="flame" density={30} seed={5} className="opacity-80" />
+      </div>
 
-      <div className="container-tc relative grid items-center gap-12 py-16 pb-24 sm:py-20 sm:pb-32 lg:grid-cols-[1.1fr_0.9fr]">
+      {/* Animated logo, pinned to the top-right corner of the red block. It is
+          taken out of the grid flow so it can actually reach the corner; the
+          empty second grid column below reserves the space so the copy never
+          runs underneath it on desktop. */}
+      <HeroLogoVideo className="absolute right-0 top-[var(--hero-logo-top)] z-10 w-[var(--hero-logo)]" />
+
+      {/* Below lg the hero is a single column, so the copy is pushed down to
+          clear the corner logo instead of running underneath it. From lg the
+          empty spacer column keeps them apart and normal padding returns. */}
+      <div className="container-tc relative grid items-center gap-12 pb-24 pt-[calc(var(--hero-logo)*1.06+40px)] sm:pb-32 lg:grid-cols-[1.1fr_0.9fr] lg:py-20 lg:pb-32 lg:pt-24">
         <div>
           <Plate variant="cream" slash className="display text-xs sm:text-sm">
             {SITE.university} · {SITE.city}
@@ -48,16 +78,17 @@ export default function Hero({ stats }: HeroProps) {
           <dl className="mt-12 flex flex-wrap gap-x-4 gap-y-5">
             {statItems.map((s) => (
               <div key={s.l} className="tc-plate tc-plate-cream px-4 py-1.5">
-                <dt className="display text-2xl sm:text-3xl">{s.v}</dt>
+                <dt className="display text-2xl sm:text-3xl">
+                  <CountUp value={s.v} />
+                </dt>
                 <dd className="text-xs font-bold text-crimson/70">{s.l}</dd>
               </div>
             ))}
           </dl>
         </div>
 
-        <div className="relative hidden justify-center lg:flex lg:justify-end">
-          <AnimatedLogo className="h-auto w-full max-w-md drop-shadow-[0_24px_48px_rgba(0,0,0,0.25)]" />
-        </div>
+        {/* spacer: keeps the desktop copy clear of the corner logo above */}
+        <div aria-hidden className="hidden lg:block" />
       </div>
     </section>
   );

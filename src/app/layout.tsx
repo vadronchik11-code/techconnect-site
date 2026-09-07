@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Montserrat } from 'next/font/google';
 import './globals.css';
 import { SITE } from '@/lib/constants';
@@ -9,9 +9,13 @@ const inter = Inter({
   display: 'swap',
 });
 
+// The gazette leans on heavy *italic* Montserrat throughout. Without the italic
+// faces the browser synthesises an oblique, which is visibly wrong on Cyrillic —
+// а, б, д, и, т have genuinely different italic letterforms, not just a slant.
 const montserrat = Montserrat({
   subsets: ['latin', 'cyrillic'],
-  weight: ['600', '700', '800', '900'],
+  weight: ['500', '600', '700', '800', '900'],
+  style: ['normal', 'italic'],
   variable: '--font-montserrat',
   display: 'swap',
 });
@@ -31,9 +35,18 @@ export const metadata: Metadata = {
     locale: 'ru_RU',
     siteName: SITE.name,
   },
-  icons: {
-    icon: '/logo-original.svg',
+  // No `icons` block on purpose: an explicit one would override the file
+  // conventions. src/app/{favicon.ico,icon.png,apple-icon.png} are picked up
+  // automatically and emit the correct <link> tags for every browser.
+  appleWebApp: {
+    capable: true,
+    title: SITE.name,
+    statusBarStyle: 'black-translucent',
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#a81313',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

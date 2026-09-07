@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import ImageUpload from './ImageUpload';
+import MarkdownEditor from './MarkdownEditor';
 import SubmitButton from './SubmitButton';
 import { EVENT_TYPES, EVENT_STATUS } from '@/lib/constants';
 
@@ -56,10 +57,7 @@ export default function EventForm({
           </label>
         </div>
 
-        <label className="block">
-          <span className="tc-label">Описание</span>
-          <textarea name="description" rows={4} defaultValue={values.description} className="tc-input resize-none" placeholder="О чём мероприятие" />
-        </label>
+        <MarkdownEditor name="description" defaultValue={values.description} label="Описание" />
 
         <div className="grid gap-5 sm:grid-cols-2">
           <label className="block">

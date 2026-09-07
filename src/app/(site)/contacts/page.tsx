@@ -3,6 +3,7 @@ import { Mail, MapPin } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
 import CometStreaks from '@/components/CometStreaks';
 import JoinForm from '@/components/JoinForm';
+import Markdown from '@/components/Markdown';
 import { TelegramIcon, VkIcon } from '@/components/icons';
 import { getSettings } from '@/lib/settings';
 
@@ -102,7 +103,7 @@ export default async function ContactsPage() {
                 <CometStreaks tone="flame" density={12} seed={61} className="opacity-70" />
                 <div className="relative">
                   <h3 className="display text-lg">О проекте</h3>
-                  <p className="mt-2 leading-relaxed text-white/90">{settings.aboutText}</p>
+                  <Markdown content={settings.aboutText} compact dark className="mt-2 text-white/90" />
                 </div>
               </div>
             </div>

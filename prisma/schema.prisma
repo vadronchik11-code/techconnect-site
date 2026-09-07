@@ -1,7 +1,16 @@
 // TechConnect site — data model.
-// SQLite for local dev; switch `provider` to "postgresql" for production (VPS).
-// NOTE: enums are avoided on purpose so the same schema works on SQLite and Postgres.
-// Constrained string fields (role / type / status) are validated in app code (Zod).
+//
+// SQLite everywhere, locally and on the server alike — deliberately the SAME
+// engine in both places, so there is no dialect gap to produce "worked on my
+// machine" bugs. Locally it is prisma/dev.db; in Docker it is a file on a
+// named volume (see docker-compose.yml).
+//
+// Fine for this site's shape: a handful of editors writing occasionally, and
+// Next.js serving from a single process, so there is no write contention.
+// If it ever outgrows that, switching to PostgreSQL means changing `provider`
+// here and pointing DATABASE_URL at a server — the models need no changes,
+// because enums are avoided on purpose and the string fields (role / type /
+// status) are validated in app code with Zod instead.
 
 generator client {
   provider = "prisma-client-js"
@@ -20,27 +29,68 @@ model User {
   role         String   @default("MODERATOR") // "ADMIN" | "MODERATOR"
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
-  news News[]
 }
 
-model News {
-  id          String    @id @default(cuid())
-  slug        String    @unique
-  title       String
-  excerpt     String    @default("")
-  coverImage  String?
-  contentMd   String    @default("")
-  tags        String    @default("") // comma-separated
-  published   Boolean   @default(false)
-  publishedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+// The "Новости" nav tab is a real multi-page gazette: an ordered list of
+// GazettePages, each a freeform canvas of blocks. Pages that share the same
+// issueNumber belong to one dated issue (there's no separate Issue table —
+// page-in-issue index / total-in-issue are derived from this grouping).
+model GazettePage {
+  id          String   @id @default(cuid())
+  issueNumber Int      @default(1)
+  issueDate   DateTime @default(now())
+  order       Int      @default(0) // global order: issue grouping order AND page-within-issue order
+  width       Int      @default(1240) // design-space canvas size in px; blocks are
+  height      Int      @default(1754) // positioned/sized in these same px units
+  // NOTE: default MUST stay true — a false default would un-publish every
+  // existing page the moment `prisma db push` runs. New pages are created as
+  // drafts by passing published:false explicitly in createGazettePage().
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  author   User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
-  authorId String?
+  blocks NewspaperBlock[]
 
-  @@index([published, publishedAt])
+  @@index([order])
+}
+
+model NewspaperBlock {
+  id     String @id @default(cuid())
+  pageId String
+  page   GazettePage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  x      Int // px position within the canvas (top-left origin)
+  y      Int
+  width  Int
+  height Int
+  zIndex Int @default(0)
+
+  tone String @default("light") // "light" | "dark" | "flame" — block background
+  kind String @default("content") // "content" | "headline" | "banner" | "gallery"
+
+  number String @default("") // story index badge, e.g. "#1" (content kind, optional)
+  kicker String @default("") // gray category label next to the title (content kind)
+
+  title     String @default("")
+  contentMd String @default("") // rich text body (markdown)
+
+  imageUrl   String?
+  imageFit   String  @default("cover") // "cover" | "contain"
+  imageScale Float   @default(1) // extra zoom on top of the fit, 1 = no zoom
+  imagePosX  Float   @default(50) // focal point %, used when cropped by "cover"
+  imagePosY  Float   @default(50)
+  imageW     Int? // intrinsic px, captured at upload — drives crop-pan limits
+  imageH     Int?
+  imageLayout String @default("top") // "top" | "bottom" | "left" | "right" | "full"
+  imageSpan   Int    @default(55) // % of the block given to the photo
+  imageAlt    String @default("")
+
+  images String @default("[]") // JSON array of {url,w?,h?,alt?} — gallery kind only
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([pageId])
 }
 
 model Event {

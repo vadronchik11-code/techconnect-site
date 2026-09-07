@@ -1,5 +1,6 @@
 import AdminHeader from '@/components/admin/AdminHeader';
 import SubmitButton from '@/components/admin/SubmitButton';
+import MarkdownEditor from '@/components/admin/MarkdownEditor';
 import { getSettings } from '@/lib/settings';
 import { saveSettings } from '@/lib/actions/settings';
 
@@ -58,10 +59,7 @@ export default async function AdminSettingsPage({
               Мероприятия и партнёры считаются автоматически. Здесь — только число участников.
             </span>
           </label>
-          <label className="block">
-            <span className="tc-label">Текст «О проекте»</span>
-            <textarea name="aboutText" rows={3} defaultValue={s.aboutText} className="tc-input resize-none" />
-          </label>
+          <MarkdownEditor name="aboutText" defaultValue={s.aboutText} label="Текст «О проекте»" />
         </div>
 
         <div className="card space-y-4 p-6">

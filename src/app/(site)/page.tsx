@@ -1,11 +1,12 @@
 import Link from 'next/link';
-import { Megaphone, GraduationCap, Rocket, MapPin } from 'lucide-react';
+import { Megaphone, GraduationCap, Rocket, MapPin, Newspaper } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import Hero from '@/components/Hero';
 import CometStreaks from '@/components/CometStreaks';
+import Reveal from '@/components/Reveal';
 import SectionHeading from '@/components/SectionHeading';
 import PartnersMarquee from '@/components/PartnersMarquee';
-import NewsCard from '@/components/NewsCard';
+import Plate from '@/components/Plate';
 import { EventTypeIcon } from '@/components/icons';
 import { SITE, EVENT_TYPES, type EventType } from '@/lib/constants';
 import { getSettings } from '@/lib/settings';
@@ -16,12 +17,8 @@ export const dynamic = 'force-dynamic';
 const FORMATS = ['Митапы', 'Хакатоны', 'Форумы', 'Смена', 'Факториум'];
 
 export default async function HomePage() {
-  const [latestNews, partners, upcoming, eventsCount, settings] = await Promise.all([
-    prisma.news.findMany({
-      where: { published: true },
-      orderBy: { publishedAt: 'desc' },
-      take: 3,
-    }),
+  const [newspaper, partners, upcoming, eventsCount, settings] = await Promise.all([
+    prisma.gazettePage.findFirst({ orderBy: { order: 'desc' }, select: { updatedAt: true, _count: { select: { blocks: true } } } }),
     prisma.partner.findMany({ orderBy: { order: 'asc' } }),
     prisma.event.findMany({
       where: { status: { not: 'PAST' } },
@@ -45,14 +42,17 @@ export default async function HomePage() {
       {/* Value props — asymmetric: events lead, practice & jobs support */}
       <section className="section">
         <div className="container-tc">
-          <SectionHeading
-            plate="Что мы делаем"
-            title="Короткий путь от студента до оффера"
-            description="Три направления, которые складываются в одну экосистему развития."
-          />
+          <Reveal>
+            <SectionHeading
+              plate="Что мы делаем"
+              title="Короткий путь от студента до оффера"
+              description="Три направления, которые складываются в одну экосистему развития."
+            />
+          </Reveal>
 
           <div className="mt-12 grid gap-6 lg:grid-cols-5">
-            <div className="relative overflow-hidden rounded-xl bg-cream p-8 sm:p-10 lg:col-span-3">
+            <Reveal from="left" className="lg:col-span-3">
+            <div className="relative h-full overflow-hidden rounded-xl bg-cream p-8 sm:p-10">
               <CometStreaks tone="cream" density={12} seed={3} className="opacity-70" />
               <div className="relative">
                 <div className="grid h-14 w-14 place-items-center rounded-lg bg-flame-gradient text-white">
@@ -72,26 +72,31 @@ export default async function HomePage() {
                 </div>
               </div>
             </div>
+            </Reveal>
 
             <div className="grid gap-6 lg:col-span-2">
-              <div className="card p-7">
-                <div className="grid h-12 w-12 place-items-center rounded-lg bg-cream">
-                  <GraduationCap className="h-6 w-6 text-crimson" strokeWidth={2} aria-hidden />
+              <Reveal from="right" delay={0.1}>
+                <div className="card p-7">
+                  <div className="grid h-12 w-12 place-items-center rounded-lg bg-cream">
+                    <GraduationCap className="h-6 w-6 text-crimson" strokeWidth={2} aria-hidden />
+                  </div>
+                  <h3 className="display mt-4 text-xl text-ink">Практика</h3>
+                  <p className="mt-2 leading-relaxed text-ink/65">
+                    Реальные задачи от партнёров, командная разработка и менторство от практикующих инженеров.
+                  </p>
                 </div>
-                <h3 className="display mt-4 text-xl text-ink">Практика</h3>
-                <p className="mt-2 leading-relaxed text-ink/65">
-                  Реальные задачи от партнёров, командная разработка и менторство от практикующих инженеров.
-                </p>
-              </div>
-              <div className="card p-7">
-                <div className="grid h-12 w-12 place-items-center rounded-lg bg-cream">
-                  <Rocket className="h-6 w-6 text-crimson" strokeWidth={2} aria-hidden />
+              </Reveal>
+              <Reveal from="right" delay={0.2}>
+                <div className="card p-7">
+                  <div className="grid h-12 w-12 place-items-center rounded-lg bg-cream">
+                    <Rocket className="h-6 w-6 text-crimson" strokeWidth={2} aria-hidden />
+                  </div>
+                  <h3 className="display mt-4 text-xl text-ink">Трудоустройство</h3>
+                  <p className="mt-2 leading-relaxed text-ink/65">
+                    Карьерные форумы, разбор резюме и прямой контакт с работодателями региона.
+                  </p>
                 </div>
-                <h3 className="display mt-4 text-xl text-ink">Трудоустройство</h3>
-                <p className="mt-2 leading-relaxed text-ink/65">
-                  Карьерные форумы, разбор резюме и прямой контакт с работодателями региона.
-                </p>
-              </div>
+              </Reveal>
             </div>
           </div>
         </div>
@@ -111,19 +116,21 @@ export default async function HomePage() {
       {upcoming.length > 0 && (
         <section className="section">
           <div className="container-tc">
-            <SectionHeading
-              plate="Афиша"
-              title="Ближайшие мероприятия"
-              action={{ href: '/events', label: 'Вся дорожная карта' }}
-            />
+            <Reveal>
+              <SectionHeading
+                plate="Афиша"
+                title="Ближайшие мероприятия"
+                action={{ href: '/events', label: 'Вся дорожная карта' }}
+              />
+            </Reveal>
             <div className="mt-12 grid gap-6 md:grid-cols-3">
-              {upcoming.map((e) => {
+              {upcoming.map((e, i) => {
                 const t = EVENT_TYPES[e.type as EventType] ?? EVENT_TYPES.OTHER;
                 return (
+                  <Reveal key={e.id} delay={i * 0.08}>
                   <Link
-                    key={e.id}
                     href={`/events/${e.id}`}
-                    className="card group flex flex-col p-7 transition-all duration-300 hover:scale-[1.02] hover:shadow-glow"
+                    className="card group flex h-full flex-col p-7 transition-all duration-300 hover:scale-[1.02] hover:shadow-glow"
                   >
                     <span className="chip w-fit bg-flame-gradient text-white">
                       <EventTypeIcon type={e.type} className="h-3.5 w-3.5" /> {t.label}
@@ -137,6 +144,7 @@ export default async function HomePage() {
                       </p>
                     )}
                   </Link>
+                  </Reveal>
                 );
               })}
             </div>
@@ -144,27 +152,44 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Latest news */}
-      {latestNews.length > 0 && (
-        <section className="section bg-cream/40">
-          <div className="container-tc">
-            <SectionHeading
-              plate="Новости"
-              title="Последнее из жизни объединения"
-              action={{ href: '/news', label: 'Все новости' }}
-            />
-            <div className="mt-12 grid gap-6 md:grid-cols-3">
-              {latestNews.map((n) => (
-                <NewsCard key={n.id} news={n} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Gazette teaser */}
+      <section className="section bg-cream/40">
+        <div className="container-tc">
+          <Reveal>
+            <Link
+              href="/news"
+              className="group relative flex flex-col items-center gap-6 overflow-hidden rounded-2xl bg-ink px-8 py-14 text-center text-cream transition-transform duration-300 hover:scale-[1.01] sm:flex-row sm:justify-between sm:text-left"
+            >
+              <CometStreaks tone="dark" density={16} seed={71} className="opacity-50" />
+              <div className="relative flex flex-col items-center gap-5 sm:flex-row sm:items-center">
+                <span className="grid h-16 w-16 shrink-0 place-items-center rounded-xl border-2 border-cream/40 bg-white/5">
+                  <Newspaper className="h-8 w-8 text-flame" strokeWidth={1.75} aria-hidden />
+                </span>
+                <div>
+                  <Plate variant="flame" slash className="display text-xs sm:text-sm">
+                    Новости
+                  </Plate>
+                  <h2 className="display mt-4 text-2xl text-cream sm:text-3xl">Свежий номер газеты TechConnect</h2>
+                  <p className="mt-2 max-w-md text-cream/70">
+                    {newspaper && newspaper._count.blocks > 0
+                      ? `Обновлено ${formatDate(newspaper.updatedAt)} · заметки, фото и жизнь объединения — как в настоящей газете.`
+                      : 'Заметки, фото и жизнь объединения — как в настоящей газете.'}
+                  </p>
+                </div>
+              </div>
+              <span className="btn-primary relative shrink-0">
+                Читать газету
+                <span className="transition-transform group-hover:translate-x-1" aria-hidden>→</span>
+              </span>
+            </Link>
+          </Reveal>
+        </div>
+      </section>
 
       {/* CTA */}
       <section className="section">
         <div className="container-tc">
+          <Reveal from="none">
           <div className="relative overflow-hidden rounded-2xl bg-[linear-gradient(150deg,#C42315_0%,#8C0F0F_100%)] px-8 py-16 text-center text-white sm:px-16 sm:py-20">
             <CometStreaks tone="flame" density={20} seed={17} className="opacity-70" />
             <div className="relative">
@@ -184,6 +209,7 @@ export default async function HomePage() {
               </div>
             </div>
           </div>
+          </Reveal>
         </div>
       </section>
     </>

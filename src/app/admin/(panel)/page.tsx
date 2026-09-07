@@ -7,9 +7,8 @@ import { APPLICATION_STATUS } from '@/lib/constants';
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboard() {
-  const [news, publishedNews, events, partners, portfolio, applications, newApps, recentApps] = await Promise.all([
-    prisma.news.count(),
-    prisma.news.count({ where: { published: true } }),
+  const [gazettePages, events, partners, portfolio, applications, newApps, recentApps] = await Promise.all([
+    prisma.gazettePage.count(),
     prisma.event.count(),
     prisma.partner.count(),
     prisma.portfolioItem.count(),
@@ -19,7 +18,7 @@ export default async function AdminDashboard() {
   ]);
 
   const stats = [
-    { label: 'Новости', value: news, sub: `${publishedNews} опубликовано`, href: '/admin/news' },
+    { label: 'Газета', value: gazettePages, sub: 'страниц выпусков', href: '/admin/news' },
     { label: 'Мероприятия', value: events, sub: 'в дорожной карте', href: '/admin/events' },
     { label: 'Портфолио', value: portfolio, sub: 'кейсов', href: '/admin/portfolio' },
     { label: 'Партнёры', value: partners, sub: 'организаций', href: '/admin/partners' },
@@ -84,7 +83,7 @@ export default async function AdminDashboard() {
         <div className="card p-6">
           <h2 className="mb-4 text-lg font-extrabold text-ink">Быстрые действия</h2>
           <div className="grid gap-3">
-            <Link href="/admin/news/new" className="btn-outline justify-start !py-3">📰 Написать новость</Link>
+            <Link href="/admin/news" className="btn-outline justify-start !py-3">📰 Редактировать газету</Link>
             <Link href="/admin/events/new" className="btn-outline justify-start !py-3">🗓️ Добавить мероприятие</Link>
             <Link href="/admin/portfolio/new" className="btn-outline justify-start !py-3">💼 Добавить кейс в портфолио</Link>
             <Link href="/admin/partners/new" className="btn-outline justify-start !py-3">🤝 Добавить партнёра</Link>

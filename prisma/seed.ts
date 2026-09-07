@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { TEMPLATES, PAGE_W, PAGE_H, type TemplateId } from '../src/lib/gazetteTemplates';
 
 const prisma = new PrismaClient();
 
@@ -64,70 +65,62 @@ async function main() {
   for (const item of portfolio) await prisma.portfolioItem.create({ data: item });
   console.log(`✓ portfolio: ${portfolio.length}`);
 
-  // --- News ---
-  await prisma.news.deleteMany();
-  const news = [
-    {
-      slug: 'zapusk-sezona-2026',
-      title: 'Запускаем сезон 2026: митапы, хакатоны и стажировки',
-      excerpt: 'Рассказываем, что ждёт участников TechConnect в новом сезоне и как присоединиться.',
-      tags: 'анонс,сезон',
-      published: true,
-      publishedAt: new Date('2026-07-01T09:00:00'),
-      contentMd: `## Новый сезон уже близко
+  // --- Gazette (multi-page "Новости") ---
+  // Built from the SAME layout templates the admin offers, so seeded demo pages
+  // and hand-authored pages share one column grid and one set of margins.
+  await prisma.newspaperBlock.deleteMany();
+  await prisma.gazettePage.deleteMany();
 
-TechConnect открывает **сезон 2026**. В программе:
-
-- регулярные **митапы** по frontend, backend и Data Science;
-- большой **зимний хакатон** с призами и офферами;
-- карьерный **форум** с HR компаний-партнёров;
-- индивидуальная помощь с трудоустройством.
-
-> Мы объединяем технических специалистов ЮУрГУ, даём практику и связываем студентов с работодателями.
-
-### Как участвовать
-
-Следите за анонсами и заполните заявку на странице «Контакты» — расскажем, с чего начать.`,
-    },
-    {
-      slug: 'itogi-hakatona-autumn',
-      title: 'Итоги хакатона TechConnect Autumn',
-      excerpt: '24 команды, 48 часов и пять офферов от партнёров — как прошёл осенний хакатон.',
-      tags: 'хакатон,итоги',
-      published: true,
-      publishedAt: new Date('2025-10-27T12:00:00'),
-      contentMd: `## 48 часов в потоке
-
-Осенний хакатон собрал **120 участников** и **24 команды**. Задачи предоставили наши партнёры.
-
-### Результаты
-
-- 5 участников получили **офферы** на стажировку;
-- лучшие проекты забрали призовой фонд;
-- все команды — реальный опыт командной разработки.
-
-Спасибо всем, кто был с нами. Впереди — зимний хакатон!`,
-    },
-    {
-      slug: 'kak-my-pomogaem-s-trudoustroystvom',
-      title: 'Как TechConnect помогает с трудоустройством',
-      excerpt: 'Менторы, разбор резюме, мок-собеседования и прямой контакт с работодателями.',
-      tags: 'карьера',
-      published: true,
-      publishedAt: new Date('2026-06-10T10:00:00'),
-      contentMd: `## От студента до оффера
-
-Мы выстраиваем короткий путь между талантливыми студентами и компаниями.
-
-1. **Практика** на мероприятиях и в проектах.
-2. **Менторство** от инженеров компаний-партнёров.
-3. **Карьерный форум** и прямые контакты с HR.
-
-Присоединяйтесь — и начните свой путь в IT вместе с нами.`,
-    },
+  const issues: { issueNumber: number; issueDate: Date; templates: TemplateId[] }[] = [
+    { issueNumber: 1, issueDate: new Date('2026-08-07'), templates: ['cover', 'standard'] },
+    { issueNumber: 2, issueDate: new Date('2026-08-11'), templates: ['cover', 'photo', 'text'] },
   ];
-  for (const n of news) await prisma.news.create({ data: { ...n, authorId: admin.id } });
-  console.log(`✓ news: ${news.length}`);
+
+  let blockCount = 0;
+  let order = 0;
+  for (const issue of issues) {
+    for (const template of issue.templates) {
+      const seeds = TEMPLATES[template];
+      await prisma.gazettePage.create({
+        data: {
+          issueNumber: issue.issueNumber,
+          issueDate: issue.issueDate,
+          order: order++,
+          width: PAGE_W,
+          height: PAGE_H,
+          published: true,
+          blocks: {
+            create: seeds.map((b, i) => ({
+              x: b.x,
+              y: b.y,
+              width: b.width,
+              height: b.height,
+              zIndex: i + 1,
+              tone: b.tone ?? 'light',
+              kind: b.kind ?? 'content',
+              number: b.number ?? '',
+              kicker: b.kicker ?? '',
+              title: b.title ?? '',
+              contentMd: b.contentMd ?? '',
+              imageUrl: b.imageUrl ?? null,
+              imageFit: b.imageFit ?? 'cover',
+              imageScale: b.imageScale ?? 1,
+              imagePosX: b.imagePosX ?? 50,
+              imagePosY: b.imagePosY ?? 50,
+              imageW: b.imageW ?? null,
+              imageH: b.imageH ?? null,
+              imageLayout: b.imageLayout ?? 'top',
+              imageSpan: b.imageSpan ?? 55,
+              imageAlt: b.imageAlt ?? '',
+              images: JSON.stringify(b.images ?? []),
+            })),
+          },
+        },
+      });
+      blockCount += seeds.length;
+    }
+  }
+  console.log(`✓ gazette: ${order} pages across ${issues.length} issues, ${blockCount} blocks`);
 
   console.log('\nSeed complete ✨');
 }

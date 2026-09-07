@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import AnimatedLogo from './AnimatedLogo';
+import BrandMark from './BrandMark';
 import CometStreaks from './CometStreaks';
 import { NAV, SITE } from '@/lib/constants';
 
@@ -11,7 +11,7 @@ export default function Footer() {
       <div className="container-tc relative grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-2.5">
-            <AnimatedLogo className="h-10 w-10" />
+            <BrandMark className="h-10 w-10" />
             <span className="display text-lg text-cream">
               Tech<span className="text-flame">Connect</span>
             </span>
@@ -58,9 +58,8 @@ export default function Footer() {
       <div className="relative border-t border-white/10">
         <div className="container-tc flex flex-col items-center justify-between gap-2 py-5 text-xs text-cream/60 sm:flex-row">
           <p>© {new Date().getFullYear()} {SITE.fullName}. Все права защищены.</p>
-          <Link href="/admin" className="transition-colors hover:text-white">
-            Панель управления
-          </Link>
+          {/* No link to the admin panel: it lives on its own hostname and is
+              deliberately not discoverable from the public site. */}
         </div>
       </div>
     </footer>

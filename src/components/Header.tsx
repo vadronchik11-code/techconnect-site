@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import AnimatedLogo from './AnimatedLogo';
+import BrandMark from './BrandMark';
 import { NAV, SITE } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
@@ -32,7 +32,7 @@ export default function Header() {
     >
       <div className="container-tc flex h-16 items-center justify-between gap-4 sm:h-20">
         <Link href="/" className="group flex items-center gap-2.5" aria-label={SITE.name}>
-          <AnimatedLogo animated={false} className="h-11 w-11 transition-transform group-hover:scale-105" />
+          <BrandMark className="h-11 w-11 transition-transform group-hover:scale-105" />
           <span className="display text-lg text-ink sm:text-xl">
             Tech<span className="text-flame">Connect</span>
           </span>

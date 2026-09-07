@@ -1,35 +1,64 @@
-# Production-style stack for VPS. For local dev, use `npm run dev` instead.
+# Production stack for the VPS. Values come from .env next to this file.
+#
+# Locally nothing here is needed — SQLite is just a file, so `npm run dev`
+# works with no containers at all.
+
 services:
   web:
-    build: .
+    build:
+      context: .
+      args:
+        # both are inlined at build time — see the comments in the Dockerfile
+        NEXT_PUBLIC_SITE_URL: "${SITE_URL:-http://localhost:3000}"
+        ADMIN_HOST: "${ADMIN_HOST:-}"
     restart: unless-stopped
+    # Bound to loopback on purpose: nginx terminates TLS and proxies here, so
+    # the app must not be reachable as http://<ip>:3000 bypassing the domain.
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
-      DATABASE_URL: "postgresql://techconnect:${DB_PASSWORD:-changeme}@db:5432/techconnect?schema=public"
-      AUTH_SECRET: "${AUTH_SECRET:-please-change-this-secret}"
+      # absolute path onto the named volume below — NOT inside the image, or
+      # the database would be wiped on every rebuild
+      DATABASE_URL: "file:/app/data/prod.db"
+      AUTH_SECRET: "${AUTH_SECRET:?set AUTH_SECRET in .env}"
       NEXT_PUBLIC_SITE_URL: "${SITE_URL:-http://localhost:3000}"
     volumes:
+      - dbdata:/app/data
       - uploads:/app/public/uploads
     depends_on:
-      db:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
-  db:
-    image: postgres:16-alpine
-    restart: unless-stopped
+  # Creates/updates the database schema, then exits. Runs as the same uid as
+  # the app so the file it creates stays writable by it.
+  migrate:
+    build:
+      context: .
+      target: migrator
+    restart: "no"
+    user: "1001:1001"
     environment:
-      POSTGRES_USER: techconnect
-      POSTGRES_PASSWORD: "${DB_PASSWORD:-changeme}"
-      POSTGRES_DB: techconnect
+      DATABASE_URL: "file:/app/data/prod.db"
     volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U techconnect"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      - dbdata:/app/data
+
+  # Fills an empty database with the admin account and demo content.
+  # Run manually, once: docker compose run --rm seed
+  seed:
+    build:
+      context: .
+      target: migrator
+    profiles: ["manual"]
+    restart: "no"
+    user: "1001:1001"
+    environment:
+      DATABASE_URL: "file:/app/data/prod.db"
+      SEED_ADMIN_EMAIL: "${SEED_ADMIN_EMAIL:-admin@techconnect.ru}"
+      SEED_ADMIN_PASSWORD: "${SEED_ADMIN_PASSWORD:?set SEED_ADMIN_PASSWORD in .env}"
+    command: ["npx", "tsx", "prisma/seed.ts"]
+    volumes:
+      - dbdata:/app/data
 
 volumes:
+  dbdata:
   uploads:
-  pgdata:

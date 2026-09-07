@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import PageHeader from '@/components/PageHeader';
+import Markdown from '@/components/Markdown';
 import { SITE } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
@@ -47,11 +48,12 @@ export default async function PartnersPage() {
                         </a>
                       )}
                     </div>
-                    {p.description && <p className="mt-2 text-ink/65">{p.description}</p>}
+                    {p.description && <Markdown content={p.description} compact className="mt-2 text-ink/65" />}
                     {p.help && (
-                      <p className="mt-3 rounded-lg bg-cream/70 px-4 py-2.5 text-sm text-crimson">
-                        <span className="font-bold">Чем помогает:</span> {p.help}
-                      </p>
+                      <div className="mt-3 rounded-lg bg-cream/70 px-4 py-2.5 text-sm text-crimson">
+                        <span className="font-bold">Чем помогает:</span>
+                        <Markdown content={p.help} compact className="mt-0.5" />
+                      </div>
                     )}
                   </div>
                 </article>

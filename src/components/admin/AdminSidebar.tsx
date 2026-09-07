@@ -65,9 +65,16 @@ export default function AdminSidebar({ user }: { user: { name: string | null; em
         <p className="truncate text-sm font-semibold text-ink">{user.name ?? user.email}</p>
         <p className="text-xs text-ink/50">{user.role === 'ADMIN' ? 'Администратор' : 'Модератор'}</p>
         <div className="mt-3 flex flex-wrap items-center gap-1">
-          <Link href="/" className="btn-ghost !px-2.5 !py-1.5 text-xs">
+          {/* Absolute: the panel sits on a different hostname than the site, so
+              a relative "/" would just reload the panel. */}
+          <a
+            href={process.env.NEXT_PUBLIC_SITE_URL || '/'}
+            className="btn-ghost !px-2.5 !py-1.5 text-xs"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             На сайт
-          </Link>
+          </a>
           <Link href="/admin/password" className="btn-ghost !px-2.5 !py-1.5 text-xs">
             Пароль
           </Link>
